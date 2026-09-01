@@ -1,0 +1,3588 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#111827">
+<title>AI小说大师 23.0</title>
+
+<style>
+*{box-sizing:border-box}
+
+body{
+    margin:0;
+    background:#f3f4f6;
+    color:#111827;
+    font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+
+button,input,textarea,select{
+    font:inherit;
+}
+
+button{
+    border:0;
+    border-radius:10px;
+    padding:11px 15px;
+    background:#111827;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    opacity:.9;
+}
+
+button.secondary{
+    background:#e5e7eb;
+    color:#111827;
+}
+
+button.blue{
+    background:#2563eb;
+}
+
+button.green{
+    background:#059669;
+}
+
+button.red{
+    background:#dc2626;
+}
+
+.container{
+    max-width:1200px;
+    margin:auto;
+    padding:12px;
+}
+
+.header{
+    background:#111827;
+    color:white;
+    border-radius:18px;
+    padding:18px;
+    margin-bottom:12px;
+}
+
+.header-top{
+    display:flex;
+    justify-content:space-between;
+    gap:15px;
+    align-items:center;
+}
+
+.logo{
+    font-size:24px;
+    font-weight:800;
+}
+
+.subtitle{
+    opacity:.7;
+    font-size:13px;
+    margin-top:4px;
+}
+
+.nav{
+    display:flex;
+    gap:7px;
+    overflow-x:auto;
+    padding-bottom:5px;
+    margin-bottom:12px;
+}
+
+.nav button{
+    white-space:nowrap;
+    background:#e5e7eb;
+    color:#111827;
+}
+
+.nav button.active{
+    background:#2563eb;
+    color:white;
+}
+
+.page{
+    display:none;
+}
+
+.page.active{
+    display:block;
+}
+
+.card{
+    background:white;
+    border-radius:16px;
+    padding:17px;
+    margin-bottom:13px;
+    box-shadow:0 2px 10px rgba(0,0,0,.05);
+}
+
+.grid{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:13px;
+}
+
+.grid3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    gap:13px;
+}
+
+label{
+    display:block;
+    font-weight:700;
+    margin:11px 0 6px;
+}
+
+input,
+textarea,
+select{
+    width:100%;
+    border:1px solid #d1d5db;
+    border-radius:10px;
+    padding:11px;
+    background:white;
+    color:#111827;
+}
+
+textarea{
+    min-height:160px;
+    resize:vertical;
+}
+
+.big{
+    min-height:400px;
+}
+
+.row{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+    margin-top:12px;
+}
+
+.stat{
+    font-size:30px;
+    font-weight:800;
+}
+
+.muted{
+    color:#6b7280;
+}
+
+.notice{
+    padding:13px;
+    border-radius:12px;
+    background:#eff6ff;
+    border:1px solid #bfdbfe;
+    margin-bottom:12px;
+}
+
+.success{
+    background:#ecfdf5;
+    border-color:#a7f3d0;
+}
+
+.warning{
+    background:#fffbeb;
+    border-color:#fde68a;
+}
+
+.chapter-item{
+    border:1px solid #e5e7eb;
+    border-radius:13px;
+    padding:14px;
+    margin:9px 0;
+}
+
+.chapter-title{
+    font-weight:800;
+    font-size:17px;
+}
+
+.chapter-preview{
+    margin-top:7px;
+    color:#6b7280;
+    font-size:14px;
+}
+
+.badge{
+    display:inline-block;
+    background:#e5e7eb;
+    border-radius:20px;
+    padding:3px 8px;
+    font-size:12px;
+    margin-left:6px;
+}
+
+.modal{
+    display:none;
+    position:fixed;
+    z-index:100;
+    inset:0;
+    background:rgba(0,0,0,.65);
+    padding:12px;
+    overflow:auto;
+}
+
+.modal.show{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.modal-box{
+    background:white;
+    width:min(900px,100%);
+    max-height:95vh;
+    overflow:auto;
+    border-radius:18px;
+    padding:18px;
+}
+
+.modal-header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+}
+
+pre{
+    white-space:pre-wrap;
+    word-break:break-word;
+}
+
+.hidden{
+    display:none!important;
+}
+
+@media(max-width:700px){
+    .grid,
+    .grid3{
+        grid-template-columns:1fr;
+    }
+
+    .header-top{
+        flex-direction:column;
+        align-items:flex-start;
+    }
+
+    .logo{
+        font-size:21px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<header class="header">
+
+<div class="header-top">
+
+<div>
+<div class="logo">📚 AI小说大师 23.0</div>
+<div class="subtitle">
+多模型 · 小说大脑 · 长篇逻辑管理 · 支持千万字小说
+</div>
+</div>
+
+<div class="row">
+
+<button id="newBookButton" class="blue">
+＋ 新建小说
+</button>
+
+<button id="exportButton" class="secondary">
+导出
+</button>
+
+<button id="importButton" class="secondary">
+导入
+</button>
+
+<input
+id="importFile"
+type="file"
+accept=".json"
+class="hidden">
+
+</div>
+
+</div>
+
+</header>
+
+
+<nav class="nav">
+
+<button data-page="home" class="active">
+总览
+</button>
+
+<button data-page="creative">
+创作信息
+</button>
+
+<button data-page="outline">
+总纲
+</button>
+
+<button data-page="write">
+章节写作
+</button>
+
+<button data-page="brain">
+小说大脑
+</button>
+
+<button data-page="chapters">
+章节管理
+</button>
+
+<button data-page="models">
+模型
+</button>
+
+<button data-page="settings">
+设置
+</button>
+
+</nav>
+
+
+<!-- 总览 -->
+
+<section id="home" class="page active">
+
+<div class="grid3">
+
+<div class="card">
+<div class="muted">当前小说</div>
+<div id="homeBookName" class="stat" style="font-size:22px">
+暂无
+</div>
+</div>
+
+<div class="card">
+<div class="muted">章节</div>
+<div id="homeChapterCount" class="stat">
+0
+</div>
+</div>
+
+<div class="card">
+<div class="muted">总字数</div>
+<div id="homeWordCount" class="stat">
+0
+</div>
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>🧠 小说大脑</h2>
+
+<div class="notice">
+软件不会把1000万字小说全部发送给AI。
+系统会将小说拆分为总纲、分卷、章节、人物、事件、世界观、伏笔和长期记忆，再根据当前章节自动检索需要的信息。
+</div>
+
+<div class="grid">
+
+<div>
+<strong>总纲</strong>
+<div id="brainOutlineStatus" class="muted">
+未建立
+</div>
+</div>
+
+<div>
+<strong>人物</strong>
+<div id="brainCharacterStatus" class="muted">
+0
+</div>
+</div>
+
+<div>
+<strong>伏笔</strong>
+<div id="brainForeshadowStatus" class="muted">
+0
+</div>
+</div>
+
+<div>
+<strong>事件</strong>
+<div id="brainEventStatus" class="muted">
+0
+</div>
+</div>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>📌 系统状态</h2>
+
+<div id="systemStatus" class="notice success">
+准备就绪
+</div>
+
+</div>
+
+</section>
+
+
+<!-- 创作信息 -->
+
+<section id="creative" class="page">
+
+<div class="card">
+
+<h2>✍️ 创作信息</h2>
+
+<label>
+小说名称
+</label>
+
+<input
+id="bookName"
+placeholder="例如：星海天王"
+/>
+
+
+<label>
+题材
+</label>
+
+<input
+id="genre"
+placeholder="都市、玄幻、科幻、历史、穿越……"
+/>
+
+
+<label>
+主角设定
+</label>
+
+<textarea
+id="protagonist"
+placeholder="姓名、年龄、身份、性格、目标、能力、底线……">
+</textarea>
+
+
+<label>
+世界观
+</label>
+
+<textarea
+id="world"
+placeholder="世界背景、时代、力量体系、科技水平、地理、势力……">
+</textarea>
+
+
+<label>
+核心剧情要求
+</label>
+
+<textarea
+id="plot"
+placeholder="告诉AI你想写什么故事、必须发生什么、禁止发生什么……">
+</textarea>
+
+
+<label>
+写作风格
+</label>
+
+<input
+id="style"
+placeholder="爽文、史诗、细腻、轻松、黑暗、热血……"
+/>
+
+
+<div class="row">
+
+<button id="saveCreative" class="green">
+保存创作信息
+</button>
+
+<button id="generateOutline" class="blue">
+🧠 AI生成总纲
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- 总纲 -->
+
+<section id="outline" class="page">
+
+<div class="card">
+
+<h2>🗺️ 小说总纲</h2>
+
+<div class="notice">
+总纲可以由AI生成，也可以手动修改。修改后不会自动删除已经写好的章节。
+</div>
+
+<textarea
+id="outlineText"
+class="big"
+placeholder="这里保存整部小说的总纲……">
+</textarea>
+
+<div class="row">
+
+<button id="saveOutline" class="green">
+保存总纲
+</button>
+
+<button id="generateVolumes" class="blue">
+生成分卷规划
+</button>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>📦 分卷规划</h2>
+
+<textarea
+id="volumesText"
+class="big"
+placeholder="第一卷……第二卷……第三卷……">
+</textarea>
+
+<div class="row">
+
+<button id="saveVolumes" class="green">
+保存分卷
+</button>
+
+</div>
+
+</div>
+
+</section>
+
+
+<!-- 写作 -->
+
+<section id="write" class="page">
+
+<div class="card">
+
+<h2>📝 章节写作</h2>
+
+<div class="grid">
+
+<div>
+
+<label>
+目标字数
+</label>
+
+<input
+id="targetWords"
+type="number"
+value="5000"
+min="500"
+step="500"
+/>
+
+</div>
+
+<div>
+
+<label>
+写作模型
+</label>
+
+<select id="writerSelect">
+</select>
+
+</div>
+
+</div>
+
+
+<label>
+本章要求
+</label>
+
+<textarea
+id="chapterRequest"
+placeholder="例如：主角进入学院，认识第一批伙伴，同时埋下一个长期伏笔……">
+</textarea>
+
+
+<div class="row">
+
+<button id="planChapter" class="blue">
+① 规划本章
+</button>
+
+<button id="generateChapter">
+② 生成正文
+</button>
+
+<button id="auditChapter" class="secondary">
+③ AI审核
+</button>
+
+</div>
+
+
+<label>
+章节大纲
+</label>
+
+<textarea
+id="chapterPlan"
+class="big">
+</textarea>
+
+
+<label>
+正文
+</label>
+
+<textarea
+id="chapterContent"
+style="min-height:600px">
+</textarea>
+
+</div>
+
+</section>
+
+
+<!-- 小说大脑 -->
+
+<section id="brain" class="page">
+
+<div class="card">
+
+<h2>🧠 小说大脑</h2>
+
+<div class="notice">
+长期记忆数据库。AI生成章节后，会尝试自动提取重要人物、事件、事实和伏笔。
+</div>
+
+<label>
+检索
+</label>
+
+<input
+id="brainSearch"
+placeholder="搜索人物、事件、伏笔、能力、地点……"
+/>
+
+<div class="row">
+
+<button id="searchBrain">
+搜索
+</button>
+
+<button id="refreshBrain" class="secondary">
+刷新
+</button>
+
+</div>
+
+<div id="brainResults"></div>
+
+</div>
+
+
+<div class="grid">
+
+<div class="card">
+
+<h3>👤 人物</h3>
+
+<textarea
+id="characters"
+placeholder="每行一个人物。也可以直接写人物当前状态。">
+</textarea>
+
+</div>
+
+
+<div class="card">
+
+<h3>⏳ 时间线 / 事件</h3>
+
+<textarea
+id="timeline">
+</textarea>
+
+</div>
+
+
+<div class="card">
+
+<h3>🪝 未回收伏笔</h3>
+
+<textarea
+id="foreshadows">
+</textarea>
+
+</div>
+
+
+<div class="card">
+
+<h3>🌎 世界事实 / 能力 / 物品 / 势力</h3>
+
+<textarea
+id="facts">
+</textarea>
+
+</div>
+
+</div>
+
+
+<div class="card">
+
+<button id="saveBrain" class="green">
+保存小说大脑
+</button>
+
+</div>
+
+</section>
+
+
+<!-- 章节管理 -->
+
+<section id="chapters" class="page">
+
+<div class="card">
+
+<h2>📖 章节管理</h2>
+
+<div id="chapterList"></div>
+
+</div>
+
+</section>
+
+
+<!-- 模型 -->
+
+<section id="models" class="page">
+
+<div class="card">
+
+<h2>🤖 多模型分工</h2>
+
+<div class="notice">
+可以给不同任务指定不同模型。所有模型均通过你设置的API接口调用。
+</div>
+
+
+<label>
+总编模型
+</label>
+
+<input
+id="plannerModel"
+placeholder="例如：gpt-5.6"
+/>
+
+
+<label>
+剧情逻辑模型
+</label>
+
+<input
+id="logicModel"
+placeholder="例如：gpt-5.6"
+/>
+
+
+<label>
+写作模型
+</label>
+
+<input
+id="writerModel"
+placeholder="例如：gpt-5.6"
+/>
+
+
+<label>
+审核模型
+</label>
+
+<input
+id="auditModel"
+placeholder="例如：gpt-5.6"
+/>
+
+
+<label>
+记忆提取模型
+</label>
+
+<input
+id="memoryModel"
+placeholder="例如：gpt-5.6"
+/>
+
+
+<button id="saveModels" class="green">
+保存模型配置
+</button>
+
+</div>
+
+</section>
+
+
+<!-- 设置 -->
+
+<section id="settings" class="page">
+
+<div class="card">
+
+<h2>🌐 网络AI接口</h2>
+
+<div class="notice warning">
+这是浏览器直接请求AI接口的模式。API服务必须允许浏览器CORS请求。
+不要把个人API Key部署到公开网站。
+</div>
+
+
+<label>
+API地址
+</label>
+
+<input
+id="apiUrl"
+placeholder="https://你的接口/v1/chat/completions"
+/>
+
+
+<label>
+API Key
+</label>
+
+<input
+id="apiKey"
+type="password"
+placeholder="sk-……"
+/>
+
+
+<label>
+默认模型
+</label>
+
+<input
+id="defaultModel"
+placeholder="例如：gpt-5.6"
+/>
+
+
+<label>
+Temperature
+</label>
+
+<input
+id="temperature"
+type="number"
+value="0.8"
+min="0"
+max="2"
+step="0.1"
+/>
+
+
+<div class="row">
+
+<button id="saveSettings" class="green">
+保存
+</button>
+
+<button id="testApi" class="blue">
+测试AI接口
+</button>
+
+</div>
+
+
+<div id="apiResult" class="notice">
+尚未测试
+</div>
+
+</div>
+
+
+<div class="card">
+
+<h2>🗑️ 小说管理</h2>
+
+<button id="deleteBook" class="red">
+删除当前小说
+</button>
+
+</div>
+
+</section>
+
+</div>
+
+
+<!-- 新建小说弹窗 -->
+
+<div id="newBookModal" class="modal">
+
+<div class="modal-box">
+
+<div class="modal-header">
+
+<h2>新建小说</h2>
+
+<button id="closeNewBook" class="secondary">
+关闭
+</button>
+
+</div>
+
+<label>
+小说名称
+</label>
+
+<input
+id="newBookName"
+placeholder="请输入小说名称"
+/>
+
+<div class="row">
+
+<button id="cancelNewBook" class="secondary">
+取消
+</button>
+
+<button id="confirmNewBook" class="blue">
+创建小说
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<!-- 章节弹窗 -->
+
+<div id="chapterModal" class="modal">
+
+<div class="modal-box">
+
+<div class="modal-header">
+
+<h2 id="chapterModalTitle">
+章节
+</h2>
+
+<button id="closeChapterModal" class="secondary">
+关闭
+</button>
+
+</div>
+
+
+<label>
+章节标题
+</label>
+
+<input id="editChapterTitle">
+
+
+<label>
+章节正文
+</label>
+
+<textarea
+id="editChapterContent"
+style="min-height:65vh">
+</textarea>
+
+
+<div id="chapterWordCount" class="muted">
+0字
+</div>
+
+
+<div class="row">
+
+<button id="copyChapter" class="secondary">
+复制
+</button>
+
+<button id="saveChapter" class="green">
+保存
+</button>
+
+<button id="deleteChapter" class="red">
+删除章节
+</button>
+
+</div>
+
+</div>
+
+</div>
+
+
+<script>
+
+/* =========================================================
+   AI小说大师 23.0
+   单文件版本
+   IndexedDB + 多模型 + 小说大脑
+========================================================= */
+
+
+/* -------------------------
+   全局变量
+------------------------- */
+
+const DB_NAME = "AI_NOVEL_MASTER_23";
+const DB_VERSION = 1;
+
+let db = null;
+let currentBook = null;
+let editingChapterIndex = -1;
+
+
+/* -------------------------
+   IndexedDB
+------------------------- */
+
+function openDatabase(){
+
+    return new Promise((resolve,reject)=>{
+
+        const request =
+            indexedDB.open(DB_NAME,DB_VERSION);
+
+        request.onupgradeneeded = function(){
+
+            const database = request.result;
+
+            if(!database.objectStoreNames.contains("books")){
+
+                database.createObjectStore(
+                    "books",
+                    {keyPath:"id"}
+                );
+
+            }
+
+        };
+
+        request.onsuccess = function(){
+
+            db = request.result;
+            resolve(db);
+
+        };
+
+        request.onerror = function(){
+
+            reject(request.error);
+
+        };
+
+    });
+
+}
+
+
+function saveBook(){
+
+    return new Promise((resolve,reject)=>{
+
+        if(!db){
+
+            reject(new Error("数据库没有初始化"));
+            return;
+
+        }
+
+        const transaction =
+            db.transaction("books","readwrite");
+
+        const store =
+            transaction.objectStore("books");
+
+        store.put(currentBook);
+
+        transaction.oncomplete =
+            ()=>resolve();
+
+        transaction.onerror =
+            ()=>reject(transaction.error);
+
+    });
+
+}
+
+
+function getBook(id){
+
+    return new Promise((resolve,reject)=>{
+
+        const transaction =
+            db.transaction("books","readonly");
+
+        const store =
+            transaction.objectStore("books");
+
+        const request =
+            store.get(id);
+
+        request.onsuccess =
+            ()=>resolve(request.result);
+
+        request.onerror =
+            ()=>reject(request.error);
+
+    });
+
+}
+
+
+function deleteBookFromDB(id){
+
+    return new Promise((resolve,reject)=>{
+
+        const transaction =
+            db.transaction("books","readwrite");
+
+        const store =
+            transaction.objectStore("books");
+
+        store.delete(id);
+
+        transaction.oncomplete =
+            ()=>resolve();
+
+        transaction.onerror =
+            ()=>reject(transaction.error);
+
+    });
+
+}
+
+
+/* -------------------------
+   创建小说对象
+------------------------- */
+
+function createBook(name){
+
+    return {
+
+        id:
+            "book_" +
+            Date.now() +
+            "_" +
+            Math.random()
+                .toString(36)
+                .substring(2,8),
+
+        name:name,
+
+        creative:{
+
+            genre:"",
+            protagonist:"",
+            world:"",
+            plot:"",
+            style:""
+
+        },
+
+        outline:"",
+
+        volumes:"",
+
+        chapters:[],
+
+        characters:[],
+
+        timeline:[],
+
+        foreshadows:[],
+
+        facts:[],
+
+        chapterPlan:"",
+
+        settings:{
+
+            apiUrl:"",
+            apiKey:"",
+            defaultModel:"",
+            temperature:0.8
+
+        },
+
+        models:{
+
+            planner:"",
+            logic:"",
+            writer:"",
+            audit:"",
+            memory:""
+
+        }
+
+    };
+
+}
+
+
+/* -------------------------
+   初始化
+------------------------- */
+
+async function init(){
+
+    try{
+
+        await openDatabase();
+
+        const currentID =
+            localStorage.getItem(
+                "AI_NOVEL_CURRENT"
+            );
+
+        if(currentID){
+
+            currentBook =
+                await getBook(currentID);
+
+        }
+
+        if(!currentBook){
+
+            currentBook =
+                createBook("我的第一本小说");
+
+            await saveBook();
+
+            localStorage.setItem(
+                "AI_NOVEL_CURRENT",
+                currentBook.id
+            );
+
+        }
+
+        loadUI();
+
+        renderAll();
+
+        setStatus("系统已启动");
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        alert(
+            "初始化失败：" +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* -------------------------
+   工具函数
+------------------------- */
+
+function $(id){
+
+    return document.getElementById(id);
+
+}
+
+
+function countWords(text){
+
+    return Array.from(text || "").length;
+
+}
+
+
+function escapeHTML(text){
+
+    return String(text || "")
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;")
+        .replace(/'/g,"&#039;");
+
+}
+
+
+function setStatus(text){
+
+    $("systemStatus").textContent = text;
+
+}
+
+
+/* -------------------------
+   页面切换
+------------------------- */
+
+document
+.querySelectorAll(".nav button")
+.forEach(button=>{
+
+    button.addEventListener(
+        "click",
+        ()=>{
+
+            const page =
+                button.dataset.page;
+
+            document
+            .querySelectorAll(".page")
+            .forEach(p=>
+                p.classList.remove("active")
+            );
+
+            $(page)
+                .classList.add("active");
+
+            document
+            .querySelectorAll(".nav button")
+            .forEach(b=>
+                b.classList.remove("active")
+            );
+
+            button.classList.add("active");
+
+        }
+    );
+
+});
+
+
+/* -------------------------
+   UI加载
+------------------------- */
+
+function loadUI(){
+
+    $("bookName").value =
+        currentBook.name || "";
+
+    $("genre").value =
+        currentBook.creative.genre || "";
+
+    $("protagonist").value =
+        currentBook.creative.protagonist || "";
+
+    $("world").value =
+        currentBook.creative.world || "";
+
+    $("plot").value =
+        currentBook.creative.plot || "";
+
+    $("style").value =
+        currentBook.creative.style || "";
+
+    $("outlineText").value =
+        currentBook.outline || "";
+
+    $("volumesText").value =
+        currentBook.volumes || "";
+
+    $("chapterPlan").value =
+        currentBook.chapterPlan || "";
+
+    $("characters").value =
+        currentBook.characters.join("\n");
+
+    $("timeline").value =
+        currentBook.timeline.join("\n");
+
+    $("foreshadows").value =
+        currentBook.foreshadows.join("\n");
+
+    $("facts").value =
+        currentBook.facts.join("\n");
+
+
+    $("apiUrl").value =
+        currentBook.settings.apiUrl || "";
+
+    $("apiKey").value =
+        currentBook.settings.apiKey || "";
+
+    $("defaultModel").value =
+        currentBook.settings.defaultModel || "";
+
+    $("temperature").value =
+        currentBook.settings.temperature ?? .8;
+
+
+    $("plannerModel").value =
+        currentBook.models.planner || "";
+
+    $("logicModel").value =
+        currentBook.models.logic || "";
+
+    $("writerModel").value =
+        currentBook.models.writer || "";
+
+    $("auditModel").value =
+        currentBook.models.audit || "";
+
+    $("memoryModel").value =
+        currentBook.models.memory || "";
+
+
+    updateWriterSelect();
+
+}
+
+
+/* -------------------------
+   保存创作信息
+------------------------- */
+
+$("saveCreative")
+.addEventListener("click",async()=>{
+
+    currentBook.name =
+        $("bookName").value.trim()
+        || "未命名小说";
+
+    currentBook.creative = {
+
+        genre:$("genre").value,
+
+        protagonist:
+            $("protagonist").value,
+
+        world:
+            $("world").value,
+
+        plot:
+            $("plot").value,
+
+        style:
+            $("style").value
+
+    };
+
+    await saveBook();
+
+    renderAll();
+
+    alert("创作信息已保存");
+
+});
+
+
+/* -------------------------
+   保存总纲
+------------------------- */
+
+$("saveOutline")
+.addEventListener("click",async()=>{
+
+    currentBook.outline =
+        $("outlineText").value;
+
+    await saveBook();
+
+    renderAll();
+
+    alert("总纲已保存");
+
+});
+
+
+/* -------------------------
+   保存分卷
+------------------------- */
+
+$("saveVolumes")
+.addEventListener("click",async()=>{
+
+    currentBook.volumes =
+        $("volumesText").value;
+
+    await saveBook();
+
+    alert("分卷规划已保存");
+
+});
+
+
+/* -------------------------
+   小说大脑保存
+------------------------- */
+
+$("saveBrain")
+.addEventListener("click",async()=>{
+
+    currentBook.characters =
+        $("characters")
+        .value
+        .split("\n")
+        .map(x=>x.trim())
+        .filter(Boolean);
+
+
+    currentBook.timeline =
+        $("timeline")
+        .value
+        .split("\n")
+        .map(x=>x.trim())
+        .filter(Boolean);
+
+
+    currentBook.foreshadows =
+        $("foreshadows")
+        .value
+        .split("\n")
+        .map(x=>x.trim())
+        .filter(Boolean);
+
+
+    currentBook.facts =
+        $("facts")
+        .value
+        .split("\n")
+        .map(x=>x.trim())
+        .filter(Boolean);
+
+
+    await saveBook();
+
+    renderAll();
+
+    alert("小说大脑已保存");
+
+});
+
+
+/* -------------------------
+   AI接口
+------------------------- */
+
+async function callAI(
+    systemPrompt,
+    userPrompt,
+    model
+){
+
+    const url =
+        currentBook.settings.apiUrl
+            .trim();
+
+    if(!url){
+
+        throw new Error(
+            "请先填写AI API地址"
+        );
+
+    }
+
+
+    model =
+        model ||
+        currentBook.settings.defaultModel
+            .trim();
+
+    if(!model){
+
+        throw new Error(
+            "没有设置模型名称"
+        );
+
+    }
+
+
+    const headers = {
+
+        "Content-Type":
+            "application/json"
+
+    };
+
+
+    if(
+        currentBook.settings.apiKey
+    ){
+
+        headers.Authorization =
+            "Bearer " +
+            currentBook.settings.apiKey;
+
+    }
+
+
+    const body = {
+
+        model:model,
+
+        messages:[
+
+            {
+
+                role:"system",
+
+                content:
+                    systemPrompt
+
+            },
+
+            {
+
+                role:"user",
+
+                content:
+                    userPrompt
+
+            }
+
+        ],
+
+        temperature:
+            Number(
+                currentBook
+                    .settings
+                    .temperature
+            ) || .8
+
+    };
+
+
+    const response =
+        await fetch(
+            url,
+            {
+
+                method:"POST",
+
+                headers:headers,
+
+                body:
+                    JSON.stringify(body)
+
+            }
+        );
+
+
+    const text =
+        await response.text();
+
+
+    if(!response.ok){
+
+        throw new Error(
+            "HTTP " +
+            response.status +
+            "\n" +
+            text.substring(0,1000)
+        );
+
+    }
+
+
+    let data;
+
+    try{
+
+        data =
+            JSON.parse(text);
+
+    }
+    catch{
+
+        throw new Error(
+            "AI接口返回的不是JSON：\n" +
+            text.substring(0,1000)
+        );
+
+    }
+
+
+    if(
+        data &&
+        data.choices &&
+        data.choices[0]
+    ){
+
+        return (
+            data.choices[0]
+                .message
+                ?.content
+            ||
+            data.choices[0]
+                .text
+            ||
+            ""
+        );
+
+    }
+
+
+    if(data.output_text){
+
+        return data.output_text;
+
+    }
+
+
+    return JSON.stringify(
+        data,
+        null,
+        2
+    );
+
+}
+
+
+/* -------------------------
+   构造小说上下文
+------------------------- */
+
+function buildContext(){
+
+    const recent =
+        currentBook.chapters
+            .slice(-8)
+            .map(ch=>({
+
+                number:ch.number,
+
+                title:ch.title,
+
+                summary:
+                    ch.summary || "",
+
+                tail:
+                    ch.content
+                    .slice(-5000)
+
+            }));
+
+
+    return {
+
+        小说:
+            currentBook.name,
+
+        创作信息:
+            currentBook.creative,
+
+        总纲:
+            currentBook.outline,
+
+        分卷:
+            currentBook.volumes,
+
+        人物:
+            currentBook.characters,
+
+        时间线:
+            currentBook.timeline,
+
+        未回收伏笔:
+            currentBook.foreshadows,
+
+        世界事实:
+            currentBook.facts,
+
+        最近章节:
+            recent
+
+    };
+
+}
+
+
+/* -------------------------
+   AI生成总纲
+------------------------- */
+
+$("generateOutline")
+.addEventListener("click",async()=>{
+
+    try{
+
+        setStatus(
+            "总编AI正在设计千万字总纲……"
+        );
+
+
+        const prompt =
+
+`请根据以下创作信息设计一部可以长期连载、最终超过1000万字的长篇小说总纲。
+
+要求：
+
+1. 主线必须清晰。
+2. 支线必须服务主线。
+3. 人物成长必须有连续性。
+4. 世界观逐层扩大。
+5. 力量体系必须有边界。
+6. 不得随意修改用户已经确定的设定。
+7. 不要让主角无理由突然获得能力。
+8. 设计长期伏笔。
+9. 设计阶段性高潮。
+10. 每个阶段都必须有独立目标。
+11. 为后续1000万字以上内容留下扩展空间。
+
+创作信息：
+
+${JSON.stringify(
+    currentBook.creative,
+    null,
+    2
+)}
+
+请输出详细总纲。`;
+
+
+        const result =
+            await callAI(
+                "你是千万字长篇小说总编，负责长期剧情架构和逻辑一致性。",
+                prompt,
+                currentBook.models.planner
+            );
+
+
+        currentBook.outline =
+            result;
+
+        $("outlineText")
+            .value =
+            result;
+
+
+        await saveBook();
+
+        setStatus(
+            "总纲生成完成"
+        );
+
+        alert(
+            "千万字小说总纲生成完成"
+        );
+
+        document
+            .querySelector('[data-page="outline"]')
+            .click();
+
+    }
+    catch(error){
+
+        setStatus(
+            "总纲生成失败"
+        );
+
+        alert(
+            "生成失败：\n" +
+            error.message
+        );
+
+    }
+
+});
+
+
+/* -------------------------
+   分卷规划
+------------------------- */
+
+$("generateVolumes")
+.addEventListener("click",async()=>{
+
+    try{
+
+        setStatus(
+            "正在生成分卷规划……"
+        );
+
+
+        const result =
+            await callAI(
+
+                "你是长篇小说总编，负责将千万字故事拆解成长期可执行的分卷。",
+
+`请把下面的总纲拆成长期分卷。
+
+每卷包含：
+
+卷名
+预计字数
+主要目标
+核心冲突
+主要人物
+人物成长
+关键事件
+阶段高潮
+伏笔
+卷末悬念
+
+必须保证前后因果。
+
+总纲：
+
+${currentBook.outline}`,
+
+                currentBook.models.planner
+
+            );
+
+
+        currentBook.volumes =
+            result;
+
+        $("volumesText")
+            .value =
+            result;
+
+        await saveBook();
+
+        alert(
+            "分卷规划完成"
+        );
+
+    }
+    catch(error){
+
+        alert(
+            "失败：\n" +
+            error.message
+        );
+
+    }
+
+});
+
+
+/* -------------------------
+   章节规划
+------------------------- */
+
+$("planChapter")
+.addEventListener("click",async()=>{
+
+    try{
+
+        const chapterNumber =
+            currentBook.chapters.length + 1;
+
+
+        setStatus(
+            "剧情AI正在规划第" +
+            chapterNumber +
+            "章……"
+        );
+
+
+        const result =
+            await callAI(
+
+                "你是长篇小说剧情架构师。重点检查人物动机、因果、时间线、力量体系和伏笔。",
+
+`请规划第${chapterNumber}章。
+
+用户本章要求：
+
+${$("chapterRequest").value}
+
+小说长期资料：
+
+${JSON.stringify(
+    buildContext(),
+    null,
+    2
+)}
+
+输出：
+
+本章目标
+开场
+发展
+冲突
+人物行为
+关键事件
+伏笔
+结尾
+下一章钩子
+
+不得与小说大脑中的事实冲突。`,
+
+                currentBook.models.logic
+
+            );
+
+
+        currentBook.chapterPlan =
+            result;
+
+        $("chapterPlan")
+            .value =
+            result;
+
+
+        await saveBook();
+
+        setStatus(
+            "章节规划完成"
+        );
+
+        alert(
+            "章节规划完成"
+        );
+
+    }
+    catch(error){
+
+        alert(
+            "规划失败：\n" +
+            error.message
+        );
+
+    }
+
+});
+
+
+/* -------------------------
+   生成正文
+------------------------- */
+
+$("generateChapter")
+.addEventListener("click",generateChapter);
+
+
+async function generateChapter(){
+
+    try{
+
+        const chapterNumber =
+            currentBook.chapters.length + 1;
+
+
+        const target =
+            $("targetWords").value;
+
+
+        setStatus(
+            "写作AI正在生成第" +
+            chapterNumber +
+            "章……"
+        );
+
+
+        const result =
+            await callAI(
+
+`你是专业的千万字长篇小说作者。
+
+目标字数约${target}字。
+
+必须：
+
+严格遵守小说大脑。
+严格遵守人物设定。
+严格遵守世界规则。
+严格遵守力量体系。
+保持时间线连续。
+保持人物动机合理。
+不得无故修改既定事实。
+不得为了爽而破坏长期剧情。
+不得输出解释，只输出小说正文。`,
+
+`小说资料：
+
+${JSON.stringify(
+    buildContext(),
+    null,
+    2
+)}
+
+本章大纲：
+
+${currentBook.chapterPlan}
+
+本章额外要求：
+
+${$("chapterRequest").value}`,
+
+                $("writerSelect").value
+
+            );
+
+
+        $("chapterContent")
+            .value =
+            result;
+
+
+        const chapter = {
+
+            id:
+                "chapter_" +
+                Date.now(),
+
+            number:
+                chapterNumber,
+
+            title:
+                "第" +
+                chapterNumber +
+                "章",
+
+            content:
+                result,
+
+            summary:
+                "",
+
+            createdAt:
+                new Date().toISOString()
+
+        };
+
+
+        currentBook.chapters.push(
+            chapter
+        );
+
+
+        await extractMemory(
+            result,
+            chapterNumber
+        );
+
+
+        await saveBook();
+
+        renderAll();
+
+        setStatus(
+            "第" +
+            chapterNumber +
+            "章生成完成"
+        );
+
+
+        document
+            .querySelector(
+                '[data-page="chapters"]'
+            )
+            .click();
+
+
+        alert(
+            "第" +
+            chapterNumber +
+            "章生成完成"
+        );
+
+    }
+    catch(error){
+
+        setStatus(
+            "章节生成失败"
+        );
+
+        alert(
+            "生成失败：\n" +
+            error.message
+        );
+
+    }
+
+}
+
+
+/* -------------------------
+   自动提取小说大脑
+------------------------- */
+
+async function extractMemory(
+    content,
+    chapterNumber
+){
+
+    if(
+        !currentBook.models.memory
+    ){
+
+        return;
+
+    }
+
+
+    try{
+
+        const result =
+            await callAI(
+
+`你是小说数据库管理员。
+
+从章节中提取长期有效事实。
+
+只能提取真正发生的事情。
+
+不要编造。
+
+必须返回JSON：
+
+{
+"characters":[],
+"events":[],
+"foreshadows":[],
+"facts":[]
+}`,
+
+`第${chapterNumber}章：
+
+${content}`,
+
+                currentBook.models.memory
+
+            );
+
+
+        const cleaned =
+            result
+            .replace(/^```json/i,"")
+            .replace(/^```/,"")
+            .replace(/```$/,"")
+            .trim();
+
+
+        const data =
+            JSON.parse(cleaned);
+
+
+        if(
+            Array.isArray(
+                data.characters
+            )
+        ){
+
+            currentBook.characters
+                .push(
+                    ...data.characters
+                );
+
+        }
+
+
+        if(
+            Array.isArray(
+                data.events
+            )
+        ){
+
+            currentBook.timeline
+                .push(
+                    ...data.events
+                );
+
+        }
+
+
+        if(
+            Array.isArray(
+                data.foreshadows
+            )
+        ){
+
+            currentBook.foreshadows
+                .push(
+                    ...data.foreshadows
+                );
+
+        }
+
+
+        if(
+            Array.isArray(
+                data.facts
+            )
+        ){
+
+            currentBook.facts
+                .push(
+                    ...data.facts
+                );
+
+        }
+
+    }
+    catch(error){
+
+        console.warn(
+            "小说大脑自动提取失败",
+            error
+        );
+
+    }
+
+}
+
+
+/* -------------------------
+   AI审核
+------------------------- */
+
+$("auditChapter")
+.addEventListener("click",async()=>{
+
+    const text =
+        $("chapterContent")
+        .value
+        .trim();
+
+
+    if(!text){
+
+        alert(
+            "当前没有正文"
+        );
+
+        return;
+
+    }
+
+
+    try{
+
+        setStatus(
+            "审核AI正在检查逻辑……"
+        );
+
+
+        const result =
+            await callAI(
+
+`你是长篇小说总审校。
+
+重点检查：
+
+人物一致性
+世界观冲突
+力量体系冲突
+时间线冲突
+因果问题
+人物动机
+重复剧情
+伏笔问题
+主线偏离
+
+不要改正文。
+
+输出问题清单和修改建议。`,
+
+`小说资料：
+
+${JSON.stringify(
+    buildContext(),
+    null,
+    2
+)}
+
+当前章节：
+
+${text}`,
+
+                currentBook.models.audit
+
+            );
+
+
+        alert(
+            result
+        );
+
+
+        setStatus(
+            "审核完成"
+        );
+
+    }
+    catch(error){
+
+        alert(
+            "审核失败：\n" +
+            error.message
+        );
+
+    }
+
+});
+
+
+/* -------------------------
+   章节列表
+------------------------- */
+
+function renderChapters(){
+
+    const box =
+        $("chapterList");
+
+
+    if(
+        currentBook.chapters.length === 0
+    ){
+
+        box.innerHTML =
+            '<div class="muted">暂无章节</div>';
+
+        return;
+
+    }
+
+
+    box.innerHTML =
+        currentBook.chapters
+        .map((chapter,index)=>{
+
+            return `
+
+<div class="chapter-item">
+
+<div class="chapter-title">
+
+第${chapter.number}章
+
+<span class="badge">
+
+${escapeHTML(
+    chapter.title
+)}
+
+</span>
+
+</div>
+
+
+<div class="chapter-preview">
+
+${escapeHTML(
+    chapter.content
+        .substring(0,250)
+)}
+
+……
+
+</div>
+
+
+<div class="muted">
+
+${countWords(
+    chapter.content
+).toLocaleString()}字
+
+</div>
+
+
+<div class="row">
+
+<button
+data-open="${index}">
+查看 / 编辑
+</button>
+
+<button
+data-delete="${index}"
+class="red">
+删除
+</button>
+
+</div>
+
+</div>
+
+`;
+
+        })
+        .join("");
+
+
+    box
+    .querySelectorAll(
+        "[data-open]"
+    )
+    .forEach(button=>{
+
+        button.addEventListener(
+            "click",
+            ()=>openChapter(
+                Number(
+                    button.dataset.open
+                )
+            )
+        );
+
+    });
+
+
+    box
+    .querySelectorAll(
+        "[data-delete]"
+    )
+    .forEach(button=>{
+
+        button.addEventListener(
+            "click",
+            ()=>deleteChapter(
+                Number(
+                    button.dataset.delete
+                )
+            )
+        );
+
+    });
+
+}
+
+
+/* -------------------------
+   查看章节
+------------------------- */
+
+function openChapter(index){
+
+    editingChapterIndex =
+        index;
+
+
+    const chapter =
+        currentBook.chapters[index];
+
+
+    $("chapterModalTitle")
+        .textContent =
+        "第" +
+        chapter.number +
+        "章";
+
+
+    $("editChapterTitle")
+        .value =
+        chapter.title || "";
+
+
+    $("editChapterContent")
+        .value =
+        chapter.content || "";
+
+
+    updateChapterCount();
+
+
+    $("chapterModal")
+        .classList.add("show");
+
+}
+
+
+/* -------------------------
+   章节字数
+------------------------- */
+
+$("editChapterContent")
+.addEventListener(
+    "input",
+    updateChapterCount
+);
+
+
+function updateChapterCount(){
+
+    $("chapterWordCount")
+        .textContent =
+        countWords(
+            $("editChapterContent")
+                .value
+        ).toLocaleString() +
+        "字";
+
+}
+
+
+/* -------------------------
+   保存章节
+------------------------- */
+
+$("saveChapter")
+.addEventListener("click",async()=>{
+
+    if(editingChapterIndex < 0){
+
+        return;
+
+    }
+
+
+    const chapter =
+        currentBook.chapters[
+            editingChapterIndex
+        ];
+
+
+    chapter.title =
+        $("editChapterTitle")
+            .value
+            .trim()
+        || "未命名";
+
+
+    chapter.content =
+        $("editChapterContent")
+            .value;
+
+
+    chapter.updatedAt =
+        new Date().toISOString();
+
+
+    await saveBook();
+
+    renderAll();
+
+    $("chapterModal")
+        .classList
+        .remove("show");
+
+
+    alert(
+        "章节已保存"
+    );
+
+});
+
+
+/* -------------------------
+   删除章节
+------------------------- */
+
+async function deleteChapter(index){
+
+    const chapter =
+        currentBook.chapters[index];
+
+
+    if(
+        !confirm(
+            "确定删除第" +
+            chapter.number +
+            "章？\n此操作无法恢复。"
+        )
+    ){
+
+        return;
+
+    }
+
+
+    currentBook.chapters
+        .splice(index,1);
+
+
+    currentBook.chapters
+        .forEach((chapter,i)=>{
+
+            chapter.number =
+                i + 1;
+
+        });
+
+
+    await saveBook();
+
+    renderAll();
+
+}
+
+
+$("deleteChapter")
+.addEventListener(
+    "click",
+    async()=>{
+
+        if(
+            editingChapterIndex >= 0
+        ){
+
+            await deleteChapter(
+                editingChapterIndex
+            );
+
+            $("chapterModal")
+                .classList
+                .remove("show");
+
+        }
+
+    }
+);
+
+
+/* -------------------------
+   复制章节
+------------------------- */
+
+$("copyChapter")
+.addEventListener(
+    "click",
+    async()=>{
+
+        const text =
+            $("editChapterTitle")
+                .value +
+            "\n\n" +
+            $("editChapterContent")
+                .value;
+
+
+        try{
+
+            await navigator
+                .clipboard
+                .writeText(text);
+
+            alert("已复制");
+
+        }
+        catch{
+
+            alert(
+                "复制失败，请手动复制"
+            );
+
+        }
+
+    }
+);
+
+
+/* -------------------------
+   关闭弹窗
+------------------------- */
+
+$("closeChapterModal")
+.addEventListener(
+    "click",
+    ()=>{
+
+        $("chapterModal")
+            .classList
+            .remove("show");
+
+    }
+);
+
+
+/* -------------------------
+   新建小说
+------------------------- */
+
+$("newBookButton")
+.addEventListener(
+    "click",
+    ()=>{
+
+        $("newBookName")
+            .value = "";
+
+        $("newBookModal")
+            .classList
+            .add("show");
+
+        setTimeout(
+            ()=>$("newBookName").focus(),
+            100
+        );
+
+    }
+);
+
+
+$("closeNewBook")
+.addEventListener(
+    "click",
+    ()=>{
+
+        $("newBookModal")
+            .classList
+            .remove("show");
+
+    }
+);
+
+
+$("cancelNewBook")
+.addEventListener(
+    "click",
+    ()=>{
+
+        $("newBookModal")
+            .classList
+            .remove("show");
+
+    }
+);
+
+
+/* 关键：真正创建小说 */
+
+$("confirmNewBook")
+.addEventListener(
+    "click",
+    async()=>{
+
+        const name =
+            $("newBookName")
+                .value
+                .trim();
+
+
+        if(!name){
+
+            alert(
+                "请输入小说名称"
+            );
+
+            return;
+
+        }
+
+
+        try{
+
+            currentBook =
+                createBook(name);
+
+
+            await saveBook();
+
+
+            localStorage.setItem(
+                "AI_NOVEL_CURRENT",
+                currentBook.id
+            );
+
+
+            loadUI();
+
+            renderAll();
+
+
+            $("newBookModal")
+                .classList
+                .remove("show");
+
+
+            setStatus(
+                "小说创建成功"
+            );
+
+
+            alert(
+                "小说《" +
+                name +
+                "》创建成功！"
+            );
+
+        }
+        catch(error){
+
+            alert(
+                "创建失败：\n" +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* -------------------------
+   删除整本小说
+------------------------- */
+
+$("deleteBook")
+.addEventListener(
+    "click",
+    async()=>{
+
+        if(!currentBook){
+
+            return;
+
+        }
+
+
+        const check =
+            prompt(
+                "为了防止误删，请输入小说名称：\n" +
+                currentBook.name
+            );
+
+
+        if(
+            check !==
+            currentBook.name
+        ){
+
+            alert(
+                "名称不一致，已取消"
+            );
+
+            return;
+
+        }
+
+
+        try{
+
+            await deleteBookFromDB(
+                currentBook.id
+            );
+
+
+            currentBook =
+                createBook(
+                    "我的第一本小说"
+                );
+
+
+            await saveBook();
+
+
+            localStorage.setItem(
+                "AI_NOVEL_CURRENT",
+                currentBook.id
+            );
+
+
+            loadUI();
+
+            renderAll();
+
+
+            alert(
+                "小说已删除"
+            );
+
+        }
+        catch(error){
+
+            alert(
+                "删除失败：\n" +
+                error.message
+            );
+
+        }
+
+    }
+);
+
+
+/* -------------------------
+   模型配置
+------------------------- */
+
+$("saveModels")
+.addEventListener(
+    "click",
+    async()=>{
+
+        currentBook.models = {
+
+            planner:
+                $("plannerModel")
+                    .value
+                    .trim(),
+
+            logic:
+                $("logicModel")
+                    .value
+                    .trim(),
+
+            writer:
+                $("writerModel")
+                    .value
+                    .trim(),
+
+            audit:
+                $("auditModel")
+                    .value
+                    .trim(),
+
+            memory:
+                $("memoryModel")
+                    .value
+                    .trim()
+
+        };
+
+
+        await saveBook();
+
+        updateWriterSelect();
+
+        alert(
+            "模型配置已保存"
+        );
+
+    }
+);
+
+
+/* -------------------------
+   模型下拉框
+------------------------- */
+
+function updateWriterSelect(){
+
+    const select =
+        $("writerSelect");
+
+
+    select.innerHTML = "";
+
+
+    const models = [
+
+        currentBook.models.writer,
+
+        currentBook.settings.defaultModel
+
+    ]
+    .filter(Boolean);
+
+
+    const unique =
+        [...new Set(models)];
+
+
+    if(unique.length === 0){
+
+        unique.push(
+            "请先设置模型"
+        );
+
+    }
+
+
+    unique.forEach(model=>{
+
+        const option =
+            document.createElement(
+                "option"
+            );
+
+        option.value =
+            model;
+
+        option.textContent =
+            model;
+
+        select.appendChild(
+            option
+        );
+
+    });
+
+}
+
+
+/* -------------------------
+   API设置
+------------------------- */
+
+$("saveSettings")
+.addEventListener(
+    "click",
+    async()=>{
+
+        currentBook.settings = {
+
+            apiUrl:
+                $("apiUrl")
+                    .value
+                    .trim(),
+
+            apiKey:
+                $("apiKey")
+                    .value
+                    .trim(),
+
+            defaultModel:
+                $("defaultModel")
+                    .value
+                    .trim(),
+
+            temperature:
+                Number(
+                    $("temperature")
+                        .value
+                ) || .8
+
+        };
+
+
+        await saveBook();
+
+        updateWriterSelect();
+
+        alert(
+            "AI设置已保存"
+        );
+
+    }
+);
+
+
+/* -------------------------
+   测试API
+------------------------- */
+
+$("testApi")
+.addEventListener(
+    "click",
+    async()=>{
+
+        try{
+
+            $("apiResult")
+                .textContent =
+                "正在测试……";
+
+
+            const result =
+                await callAI(
+
+                    "你是API测试助手，只回复：连接成功",
+
+                    "测试",
+
+                    currentBook
+                        .settings
+                        .defaultModel
+
+                );
+
+
+            $("apiResult")
+                .textContent =
+                "✅ " +
+                result;
+
+
+        }
+        catch(error){
+
+            $("apiResult")
+                .textContent =
+                "❌ " +
+                error.message;
+
+        }
+
+    }
+);
+
+
+/* -------------------------
+   搜索小说大脑
+------------------------- */
+
+$("searchBrain")
+.addEventListener(
+    "click",
+    renderBrainSearch
+);
+
+
+$("refreshBrain")
+.addEventListener(
+    "click",
+    ()=>{
+
+        $("brainSearch")
+            .value = "";
+
+        renderBrainSearch();
+
+    }
+);
+
+
+$("brainSearch")
+.addEventListener(
+    "input",
+    renderBrainSearch
+);
+
+
+function renderBrainSearch(){
+
+    const query =
+        $("brainSearch")
+            .value
+            .trim()
+            .toLowerCase();
+
+
+    const all = [];
+
+
+    currentBook.characters
+        .forEach(x=>
+            all.push(
+                ["人物",x]
+            )
+        );
+
+
+    currentBook.timeline
+        .forEach(x=>
+            all.push(
+                ["事件",x]
+            )
+        );
+
+
+    currentBook.foreshadows
+        .forEach(x=>
+            all.push(
+                ["伏笔",x]
+            )
+        );
+
+
+    currentBook.facts
+        .forEach(x=>
+            all.push(
+                ["事实",x]
+            )
+        );
+
+
+    const filtered =
+        query
+        ?
+        all.filter(item=>
+            String(item[1])
+            .toLowerCase()
+            .includes(query)
+        )
+        :
+        all;
+
+
+    $("brainResults")
+        .innerHTML =
+        filtered
+        .slice(0,300)
+        .map(item=>`
+
+<div class="chapter-item">
+
+<strong>
+${item[0]}
+</strong>
+
+<pre>
+${escapeHTML(
+    item[1]
+)}
+</pre>
+
+</div>
+
+`)
+        .join("")
+        ||
+        '<div class="muted">没有找到内容</div>';
+
+}
+
+
+/* -------------------------
+   导出
+------------------------- */
+
+$("exportButton")
+.addEventListener(
+    "click",
+    ()=>{
+
+        const blob =
+            new Blob(
+                [
+                    JSON.stringify(
+                        currentBook,
+                        null,
+                        2
+                    )
+                ],
+                {
+                    type:
+                        "application/json"
+                }
+            );
+
+
+        const url =
+            URL.createObjectURL(
+                blob
+            );
+
+
+        const a =
+            document.createElement(
+                "a"
+            );
+
+
+        a.href = url;
+
+        a.download =
+            (
+                currentBook.name ||
+                "小说"
+            ) +
+            "_23.0备份.json";
+
+
+        document.body
+            .appendChild(a);
+
+        a.click();
+
+        a.remove();
+
+
+        setTimeout(
+            ()=>URL.revokeObjectURL(url),
+            1000
+        );
+
+    }
+);
+
+
+/* -------------------------
+   导入
+------------------------- */
+
+$("importButton")
+.addEventListener(
+    "click",
+    ()=>$("importFile").click()
+);
+
+
+$("importFile")
+.addEventListener(
+    "change",
+    async(event)=>{
+
+        const file =
+            event.target.files[0];
+
+
+        if(!file){
+
+            return;
+
+        }
+
+
+        try{
+
+            const text =
+                await file.text();
+
+
+            const data =
+                JSON.parse(text);
+
+
+            if(
+                !data.name ||
+                !Array.isArray(
+                    data.chapters
+                )
+            ){
+
+                throw new Error(
+                    "不是有效的小说备份"
+                );
+
+            }
+
+
+            data.id =
+                "book_" +
+                Date.now() +
+                "_" +
+                Math.random()
+                    .toString(36)
+                    .substring(2,8);
+
+
+            currentBook =
+                data;
+
+
+            await saveBook();
+
+
+            localStorage.setItem(
+                "AI_NOVEL_CURRENT",
+                currentBook.id
+            );
+
+
+            loadUI();
+
+            renderAll();
+
+
+            alert(
+                "小说导入成功"
+            );
+
+        }
+        catch(error){
+
+            alert(
+                "导入失败：\n" +
+                error.message
+            );
+
+        }
+
+
+        event.target.value = "";
+
+    }
+);
+
+
+/* -------------------------
+   总览刷新
+------------------------- */
+
+function renderAll(){
+
+    $("homeBookName")
+        .textContent =
+        currentBook.name;
+
+
+    $("homeChapterCount")
+        .textContent =
+        currentBook.chapters.length;
+
+
+    const totalWords =
+        currentBook.chapters
+        .reduce(
+            (total,chapter)=>
+                total +
+                countWords(
+                    chapter.content
+                ),
+            0
+        );
+
+
+    $("homeWordCount")
+        .textContent =
+        totalWords.toLocaleString();
+
+
+    $("brainOutlineStatus")
+        .textContent =
+        currentBook.outline
+        ?
+        "已建立"
+        :
+        "未建立";
+
+
+    $("brainCharacterStatus")
+        .textContent =
+        currentBook.characters.length;
+
+
+    $("brainForeshadowStatus")
+        .textContent =
+        currentBook.foreshadows.length;
+
+
+    $("brainEventStatus")
+        .textContent =
+        currentBook.timeline.length;
+
+
+    renderChapters();
+
+    renderBrainSearch();
+
+}
+
+
+/* -------------------------
+   启动
+------------------------- */
+
+init();
+
+</script>
+
+</body>
+</html>
