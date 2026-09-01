@@ -1,0 +1,1616 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="format-detection" content="telephone=no">
+    <title>AI智能写书系统 - 多模型协作</title>
+    <style>
+        :root {
+            --primary: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary: #764ba2;
+            --success: #48bb78;
+            --warning: #ed8936;
+            --danger: #f56565;
+            --info: #4299e1;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-300: #d1d5db;
+            --gray-400: #9ca3af;
+            --gray-500: #6b7280;
+            --gray-600: #4b5563;
+            --gray-700: #374151;
+            --gray-800: #1f2937;
+            --gray-900: #111827;
+            --shadow-sm: 0 1px 2px 0 rgba(0,0,0,0.05);
+            --shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+            --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+            --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+            --shadow-xl: 0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04);
+            --radius: 12px;
+            --radius-lg: 16px;
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: var(--gray-800);
+            line-height: 1.6;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        #app {
+            max-width: 480px;
+            margin: 0 auto;
+            min-height: 100vh;
+            background: var(--gray-50);
+            position: relative;
+            box-shadow: var(--shadow-xl);
+        }
+
+        /* 顶部导航 */
+        .app-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            box-shadow: 0 2px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-content h1 {
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+            background: linear-gradient(to right, #fff, #f0f0ff);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .icon-btn {
+            background: rgba(255,255,255,0.2);
+            border: 1px solid rgba(255,255,255,0.3);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: var(--transition);
+            font-size: 18px;
+            backdrop-filter: blur(10px);
+        }
+
+        .icon-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: scale(1.1);
+        }
+
+        .icon-btn:active {
+            transform: scale(0.95);
+        }
+
+        /* 侧边菜单 */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 150;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .overlay.active {
+            display: block;
+        }
+
+        .side-menu {
+            position: fixed;
+            left: -280px;
+            top: 0;
+            width: 280px;
+            height: 100vh;
+            background: white;
+            box-shadow: var(--shadow-xl);
+            transition: left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 200;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .side-menu.open {
+            left: 0;
+        }
+
+        .menu-header {
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .menu-header h3 {
+            font-size: 18px;
+            margin-bottom: 5px;
+        }
+
+        .menu-header p {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+
+        .menu-items {
+            flex: 1;
+            padding: 20px 0;
+            overflow-y: auto;
+        }
+
+        .menu-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 15px 20px;
+            color: var(--gray-700);
+            text-decoration: none;
+            font-size: 15px;
+            transition: var(--transition);
+            cursor: pointer;
+            border-left: 3px solid transparent;
+        }
+
+        .menu-item:hover {
+            background: var(--gray-100);
+            border-left-color: var(--primary);
+        }
+
+        .menu-item.active {
+            background: linear-gradient(to right, rgba(102,126,234,0.1), transparent);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .menu-item .icon {
+            font-size: 20px;
+            width: 24px;
+            text-align: center;
+        }
+
+        .menu-footer {
+            padding: 20px;
+            border-top: 1px solid var(--gray-200);
+            text-align: center;
+            font-size: 12px;
+            color: var(--gray-500);
+        }
+
+        /* 主内容区 */
+        .main-content {
+            padding: 20px;
+            min-height: calc(100vh - 60px);
+            position: relative;
+        }
+
+        .view {
+            display: none;
+            animation: slideIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .view.active {
+            display: block;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* 章节列表样式 */
+        .chapter-list-container {
+            background: white;
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+        }
+
+        .chapter-list-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+        }
+
+        .chapter-list-header h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+        }
+
+        .chapter-search {
+            width: 100%;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            backdrop-filter: blur(10px);
+        }
+
+        .chapter-search::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .chapter-search:focus {
+            outline: none;
+            background: rgba(255,255,255,0.3);
+        }
+
+        .chapter-list {
+            max-height: 500px;
+            overflow-y: auto;
+        }
+
+        .chapter-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px 20px;
+            border-bottom: 1px solid var(--gray-100);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .chapter-item:hover {
+            background: var(--gray-50);
+        }
+
+        .chapter-item:active {
+            background: var(--gray-100);
+        }
+
+        .chapter-info {
+            flex: 1;
+        }
+
+        .chapter-title {
+            font-size: 15px;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 5px;
+        }
+
+        .chapter-meta {
+            font-size: 12px;
+            color: var(--gray-500);
+            display: flex;
+            gap: 10px;
+        }
+
+        .chapter-status {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-size: 12px;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-weight: 600;
+        }
+
+        .chapter-status.completed {
+            background: #f0fff4;
+            color: var(--success);
+        }
+
+        .chapter-status.generating {
+            background: #fffbeb;
+            color: var(--warning);
+        }
+
+        .chapter-status.pending {
+            background: var(--gray-100);
+            color: var(--gray-500);
+        }
+
+        /* 阅读器样式 */
+        .reader-container {
+            background: white;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+        }
+
+        .reader-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .reader-back-btn {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            transition: var(--transition);
+        }
+
+        .reader-back-btn:hover {
+            background: rgba(255,255,255,0.3);
+        }
+
+        .reader-title {
+            flex: 1;
+            text-align: center;
+            font-size: 18px;
+            font-weight: 600;
+        }
+
+        .reader-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .reader-content {
+            padding: 30px 25px;
+            font-size: 16px;
+            line-height: 1.8;
+            color: var(--gray-800);
+            min-height: 400px;
+            max-height: 600px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        .reader-navigation {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            border-top: 1px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .nav-btn {
+            background: white;
+            border: 2px solid var(--gray-200);
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--gray-700);
+        }
+
+        .nav-btn:hover:not(:disabled) {
+            border-color: var(--primary);
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .nav-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .chapter-indicator {
+            font-size: 14px;
+            color: var(--gray-600);
+            font-weight: 600;
+        }
+
+        /* 章节跳转 */
+        .chapter-jump {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .chapter-jump input {
+            width: 60px;
+            padding: 8px;
+            border: 2px solid var(--gray-200);
+            border-radius: 6px;
+            text-align: center;
+            font-size: 14px;
+        }
+
+        .chapter-jump input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* 阅读设置 */
+        .reader-settings {
+            padding: 15px 20px;
+            background: var(--gray-50);
+            border-bottom: 1px solid var(--gray-200);
+        }
+
+        .reader-settings-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .reader-settings-label {
+            font-size: 13px;
+            color: var(--gray-600);
+            font-weight: 600;
+        }
+
+        .font-size-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .font-size-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid var(--gray-200);
+            background: white;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            color: var(--gray-600);
+            transition: var(--transition);
+        }
+
+        .font-size-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        .theme-toggle {
+            display: flex;
+            gap: 10px;
+        }
+
+        .theme-btn {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            border: 2px solid var(--gray-200);
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .theme-btn.active {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(102,126,234,0.2);
+        }
+
+        .theme-btn.light {
+            background: white;
+        }
+
+        .theme-btn.sepia {
+            background: #f5e6d3;
+        }
+
+        .theme-btn.dark {
+            background: #1a1a1a;
+        }
+
+        /* 响应式设计 */
+        @media (max-width: 480px) {
+            #app {
+                max-width: 100%;
+            }
+            
+            .main-content {
+                padding: 15px;
+            }
+            
+            .reader-content {
+                padding: 20px 15px;
+                font-size: 15px;
+            }
+        }
+
+        /* Toast通知 */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--gray-900);
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            z-index: 1000;
+            max-width: 80%;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+            box-shadow: var(--shadow-lg);
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translate(-50%, 20px);
+            }
+            to {
+                opacity: 1;
+                transform: translate(-50%, 0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app">
+        <!-- 顶部导航 -->
+        <header class="app-header">
+            <div class="header-content">
+                <h1>📚 AI智能写书</h1>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="toggleMenu()" title="菜单">
+                        <span>☰</span>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- 遮罩层 -->
+        <div id="overlay" class="overlay" onclick="closeMenu()"></div>
+
+        <!-- 侧边菜单 -->
+        <nav id="sideMenu" class="side-menu">
+            <div class="menu-header">
+                <h3>AI智能写书系统</h3>
+                <p>多模型协作 · 逻辑严谨 · 千万字级</p>
+            </div>
+            
+            <div class="menu-items">
+                <a href="#home" class="menu-item active" onclick="navigateTo('home')">
+                    <span class="icon">🏠</span>
+                    <span>首页</span>
+                </a>
+                <a href="#projects" class="menu-item" onclick="navigateTo('projects')">
+                    <span class="icon">📖</span>
+                    <span>我的作品</span>
+                </a>
+                <a href="#create" class="menu-item" onclick="navigateTo('create')">
+                    <span class="icon">✍️</span>
+                    <span>新建作品</span>
+                </a>
+                <a href="#chapters" class="menu-item" onclick="navigateTo('chapters')">
+                    <span class="icon">📑</span>
+                    <span>章节管理</span>
+                </a>
+                <a href="#generate" class="menu-item" onclick="navigateTo('generate')">
+                    <span class="icon">⚙️</span>
+                    <span>生成中心</span>
+                </a>
+                <a href="#logic" class="menu-item" onclick="navigateTo('logic')">
+                    <span class="icon">🔍</span>
+                    <span>逻辑检查</span>
+                </a>
+                <a href="#memory" class="menu-item" onclick="navigateTo('memory')">
+                    <span class="icon">🧠</span>
+                    <span>记忆管理</span>
+                </a>
+                <a href="#settings" class="menu-item" onclick="navigateTo('settings')">
+                    <span class="icon">⚙️</span>
+                    <span>系统设置</span>
+                </a>
+            </div>
+            
+            <div class="menu-footer">
+                <p>v2.0.0 · 增强版</p>
+            </div>
+        </nav>
+
+        <!-- 主要内容区 -->
+        <main class="main-content">
+            <!-- 首页视图 -->
+            <div id="homeView" class="view active">
+                <div class="welcome-section" style="text-align: center; padding: 40px 0;">
+                    <div style="font-size: 64px; margin-bottom: 20px;">🤖</div>
+                    <h2 style="font-size: 28px; margin-bottom: 15px;">AI智能写书系统</h2>
+                    <p style="color: var(--gray-600);">支持多模型协作，逻辑严谨，可创作千万字级作品</p>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin: 30px 0;">
+                    <button class="action-btn primary" onclick="navigateTo('create')" style="padding: 25px; border: none; border-radius: var(--radius); background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer;">
+                        <span style="font-size: 32px;">📝</span>
+                        <span style="display: block; margin-top: 10px; font-weight: 600;">新建作品</span>
+                    </button>
+                    <button class="action-btn" onclick="navigateTo('projects')" style="padding: 25px; border: 2px solid var(--gray-200); border-radius: var(--radius); background: white; cursor: pointer;">
+                        <span style="font-size: 32px;">📚</span>
+                        <span style="display: block; margin-top: 10px; font-weight: 600;">我的作品</span>
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin: 20px 0;">
+                    <div style="background: white; padding: 20px; border-radius: var(--radius); text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="homeTotalProjects">0</div>
+                        <div style="font-size: 13px; color: var(--gray-600);">总项目数</div>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: var(--radius); text-align: center;">
+                        <div style="font-size: 32px; font-weight: 700; color: var(--primary);" id="homeTotalWords">0</div>
+                        <div style="font-size: 13px; color: var(--gray-600);">总字数</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 项目列表视图 -->
+            <div id="projectsView" class="view">
+                <h2 style="margin-bottom: 20px;">我的作品</h2>
+                <div id="projectList" class="project-list">
+                    <!-- 动态加载 -->
+                </div>
+            </div>
+
+            <!-- 创建项目视图 -->
+            <div id="createView" class="view">
+                <h2 style="margin-bottom: 20px;">新建作品</h2>
+                <div class="form-container" style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    <form id="createProjectForm">
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">📚 作品名称</label>
+                            <input type="text" id="title" name="title" required placeholder="请输入作品名称" style="width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 15px;">
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">📝 作品简介</label>
+                            <textarea id="description" name="description" rows="4" placeholder="请描述您的故事创意" style="width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 15px; resize: vertical;"></textarea>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">🎭 作品类型</label>
+                            <select id="genre" name="genre" style="width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 15px;">
+                                <option value="fantasy">玄幻奇幻</option>
+                                <option value="scifi">科幻未来</option>
+                                <option value="romance">都市言情</option>
+                                <option value="mystery">悬疑推理</option>
+                                <option value="history">历史军事</option>
+                                <option value="wuxia">武侠仙侠</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group" style="margin-bottom: 20px;">
+                            <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">🎯 目标字数</label>
+                            <select id="targetWords" name="target_words" style="width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px; font-size: 15px;">
+                                <option value="1000000">100万字</option>
+                                <option value="5000000">500万字</option>
+                                <option value="10000000" selected>1000万字</option>
+                            </select>
+                        </div>
+                        
+                        <button type="submit" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">🚀 开始创作</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- 章节管理视图 -->
+            <div id="chaptersView" class="view">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                    <h2>章节管理</h2>
+                    <button onclick="navigateTo('projects')" style="background: none; border: none; color: var(--primary); cursor: pointer; font-size: 14px;">← 返回</button>
+                </div>
+                
+                <div id="chapterListContainer">
+                    <!-- 动态加载章节列表 -->
+                </div>
+            </div>
+
+            <!-- 阅读器视图 -->
+            <div id="readerView" class="view">
+                <div class="reader-container">
+                    <div class="reader-header">
+                        <button class="reader-back-btn" onclick="closeReader()">←</button>
+                        <div class="reader-title" id="readerTitle">章节阅读</div>
+                        <div class="reader-actions">
+                            <button class="reader-back-btn" onclick="toggleReaderSettings()">⚙</button>
+                        </div>
+                    </div>
+                    
+                    <div id="readerSettings" style="display: none;" class="reader-settings">
+                        <div class="reader-settings-row">
+                            <span class="reader-settings-label">字体大小</span>
+                            <div class="font-size-control">
+                                <button class="font-size-btn" onclick="changeFontSize(-1)">A-</button>
+                                <span id="fontSizeDisplay">16</span>
+                                <button class="font-size-btn" onclick="changeFontSize(1)">A+</button>
+                            </div>
+                        </div>
+                        <div class="reader-settings-row">
+                            <span class="reader-settings-label">阅读主题</span>
+                            <div class="theme-toggle">
+                                <button class="theme-btn light active" onclick="changeTheme('light')"></button>
+                                <button class="theme-btn sepia" onclick="changeTheme('sepia')"></button>
+                                <button class="theme-btn dark" onclick="changeTheme('dark')"></button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="reader-content" id="readerContent">
+                        <!-- 章节内容 -->
+                    </div>
+                    
+                    <div class="reader-navigation">
+                        <button class="nav-btn" id="prevChapterBtn" onclick="navigateChapter(-1)">← 上一章</button>
+                        <div class="chapter-indicator" id="chapterIndicator">第1章</div>
+                        <button class="nav-btn" id="nextChapterBtn" onclick="navigateChapter(1)">下一章 →</button>
+                    </div>
+                    
+                    <div style="padding: 15px 20px; border-top: 1px solid var(--gray-200); display: flex; justify-content: center; gap: 10px;">
+                        <div class="chapter-jump">
+                            <span style="font-size: 14px; color: var(--gray-600);">跳转到：</span>
+                            <input type="number" id="jumpChapterInput" min="1" placeholder="章节">
+                            <button class="nav-btn" onclick="jumpToChapter()">跳转</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 生成中心视图 -->
+            <div id="generateView" class="view">
+                <h2 style="margin-bottom: 20px;">生成中心</h2>
+                <div class="form-container" style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    <div id="generateProjectInfo">
+                        <h3 id="generateProjectTitle" style="margin-bottom: 15px;"></h3>
+                        <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                            <div style="text-align: center; padding: 15px; background: var(--gray-50); border-radius: 8px;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--primary);" id="genTotalWords">0</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">总字数</div>
+                            </div>
+                            <div style="text-align: center; padding: 15px; background: var(--gray-50); border-radius: 8px;">
+                                <div style="font-size: 24px; font-weight: 700; color: var(--primary);" id="genCurrentChapter">0</div>
+                                <div style="font-size: 12px; color: var(--gray-600);">当前章节</div>
+                            </div>
+                        </div>
+                        
+                        <button onclick="startGeneration()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer; margin-bottom: 10px;">▶️ 生成下一章</button>
+                        <button onclick="navigateTo('chapters')" style="width: 100%; padding: 15px; background: white; color: var(--primary); border: 2px solid var(--primary); border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">📑 查看章节列表</button>
+                    </div>
+                    
+                    <div id="noProjectSelected" style="text-align: center; padding: 40px;">
+                        <div style="font-size: 48px; margin-bottom: 20px;">📚</div>
+                        <p style="color: var(--gray-600);">请先从"我的作品"中选择一个项目</p>
+                        <button onclick="navigateTo('projects')" style="margin-top: 20px; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">选择项目</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 逻辑检查视图 -->
+            <div id="logicView" class="view">
+                <h2 style="margin-bottom: 20px;">逻辑检查中心</h2>
+                <div class="form-container" style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    <h3 style="margin-bottom: 15px;">检查配置</h3>
+                    <button onclick="runLogicCheck()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">🔍 执行全面检查</button>
+                    <div id="logicResults" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+
+            <!-- 记忆管理视图 -->
+            <div id="memoryView" class="view">
+                <h2 style="margin-bottom: 20px;">记忆管理</h2>
+                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; margin-bottom: 20px;">
+                    <div style="background: white; padding: 20px; border-radius: var(--radius); text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: var(--primary);">156</div>
+                        <div style="font-size: 12px; color: var(--gray-600);">实体总数</div>
+                    </div>
+                    <div style="background: white; padding: 20px; border-radius: var(--radius); text-align: center;">
+                        <div style="font-size: 24px; font-weight: 700; color: var(--primary);">2341</div>
+                        <div style="font-size: 12px; color: var(--gray-600);">记忆块数</div>
+                    </div>
+                </div>
+                <div class="form-container" style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    <div style="margin-bottom: 15px;">
+                        <input type="text" id="memorySearch" placeholder="搜索记忆..." style="width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px;">
+                    </div>
+                    <button onclick="searchMemory()" style="width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer;">🔍 搜索</button>
+                    <div id="memoryResults" style="margin-top: 20px;"></div>
+                </div>
+            </div>
+
+            <!-- 设置视图 -->
+            <div id="settingsView" class="view">
+                <h2 style="margin-bottom: 20px;">系统设置</h2>
+                <div class="form-container" style="background: white; padding: 25px; border-radius: var(--radius-lg); box-shadow: var(--shadow-md);">
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">主编模型</label>
+                        <select id="settingsEditorModel" style="width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px;">
+                            <option value="deepseek-r1">DeepSeek R1（推荐）</option>
+                            <option value="gpt-4">GPT-4</option>
+                            <option value="claude-3-opus">Claude 3 Opus</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">作家模型</label>
+                        <select id="settingsWriterModel" style="width: 100%; padding: 12px; border: 2px solid var(--gray-200); border-radius: 8px;">
+                            <option value="claude-3-sonnet">Claude 3 Sonnet（推荐）</option>
+                            <option value="gpt-4-turbo">GPT-4 Turbo</option>
+                            <option value="deepseek-r1">DeepSeek R1</option>
+                        </select>
+                    </div>
+                    <div style="margin-bottom: 20px;">
+                        <label style="display: block; font-size: 14px; font-weight: 600; margin-bottom: 8px;">创意度</label>
+                        <input type="range" id="settingsTemperature" min="0" max="100" value="70" style="width: 100%;">
+                        <span id="tempValue" style="font-size: 14px; color: var(--gray-600);">0.7</span>
+                    </div>
+                    <button onclick="saveSettings()" style="width: 100%; padding: 15px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 10px; font-size: 16px; font-weight: 600; cursor: pointer;">💾 保存设置</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ==================== 全局状态管理 ====================
+        const AppState = {
+            currentProject: null,
+            currentProjectId: null,
+            projects: [],
+            chapters: [],
+            currentChapter: 0,
+            isGenerating: false,
+            fontSize: 16,
+            theme: 'light',
+            settings: {
+                editorModel: 'deepseek-r1',
+                writerModel: 'claude-3-sonnet',
+                temperature: 0.7
+            }
+        };
+
+        // ==================== 模拟章节数据 ====================
+        function generateMockChapters(projectId) {
+            const chapters = [];
+            const chapterTitles = [
+                '序章：风起云涌', '第一章：初入江湖', '第二章：奇遇', '第三章：危机四伏',
+                '第四章：突破', '第五章：重逢', '第六章：真相', '第七章：抉择',
+                '第八章：决战', '第九章：新生', '第十章：远行', '第十一章：归来',
+                '第十二章：暗流涌动', '第十三章：明争暗斗', '第十四章：惊天秘密',
+                '第十五章：生死一线', '第十六章：绝处逢生', '第十七章：柳暗花明',
+                '第十八章：风起云涌', '第十九章：尘埃落定', '第二十章：新的开始'
+            ];
+            
+            for (let i = 0; i < 20; i++) {
+                const status = i < 15 ? 'completed' : (i === 15 ? 'generating' : 'pending');
+                chapters.push({
+                    chapter_index: i + 1,
+                    title: chapterTitles[i] || `第${i + 1}章`,
+                    content: generateMockContent(i + 1),
+                    word_count: 2500 + Math.floor(Math.random() * 2000),
+                    status: status,
+                    created_at: new Date(Date.now() - (20 - i) * 3600000).toISOString(),
+                    quality_score: 0.75 + Math.random() * 0.2
+                });
+            }
+            
+            return chapters;
+        }
+
+        function generateMockContent(chapterIndex) {
+            const contents = {
+                1: `清晨的阳光透过窗棂洒进房间，唤醒了沉睡中的少年。
+
+李明缓缓睁开眼睛，看着陌生的天花板，一时有些恍惚。这里是青云宗的外门弟子居所，而他，已经穿越到这个世界整整三天了。
+
+"该起床了，新来的。"门外传来一个冷漠的声音，"今日是外门考核，若是迟到，后果自负。"
+
+李明翻身坐起，快速穿好衣服。这三天里，他已经大致了解了这个世界的规则——这是一个修仙世界，而他附身的这个少年，也叫李明，是青云宗新招收的外门弟子。
+
+推开门，一个身材高大的少年正站在门外，脸上带着不耐烦的神色。他是王虎，外门弟子中的老人，负责管理新来的弟子。
+
+"跟我来。"王虎转身就走，显然不想多说什么。
+
+李明默默跟在后面，心里却在飞速思考。穿越前，他是一名普通的大学生，对修仙小说也算有些了解。但真正身处这个世界，他才发现，现实远比小说要残酷得多。
+
+考核场上，已经聚集了数十名新弟子。他们大多神情紧张，有的甚至瑟瑟发抖。
+
+"肃静！"一个威严的声音响起。
+
+李明抬头看去，只见考核台上站着一位中年男子，身着青色道袍，气度不凡。这是外门执事，周长老。
+
+"今日考核，将决定你们能否留在青云宗。"周长老环视四周，"不合格者，即刻下山，永不录用。"
+
+人群中响起一阵骚动。李明握紧了拳头，他知道，自己的命运，将在今天被决定。`,
+                2: `考核的内容很简单，却也很残酷——测试灵根。
+
+在修仙世界，灵根决定了一个人的修仙资质。没有灵根，就无法吸纳天地灵气，更遑论修仙。
+
+李明站在队伍中，看着前面的弟子一个个上前测试。有人欢喜有人愁，大多数人都是普通的杂灵根，只能勉强踏入修仙之门。
+
+"下一个，李明！"
+
+李明深吸一口气，走上前去。测试台上放着一块晶莹剔透的玉石，这是测试灵根的专用法器。
+
+"将手放在上面。"周长老说道。
+
+李明依言将手放在玉石上。瞬间，玉石绽放出耀眼的光芒。
+
+"这是……"周长老瞪大了眼睛，"天灵根？！"
+
+人群中顿时一片哗然。天灵根，这可是百年难遇的天才资质！
+
+李明自己也没想到，这具身体居然拥有如此惊人的天赋。但他很快就冷静下来，因为他知道，天赋越高，往往也意味着更多的麻烦。
+
+果然，考核结束后，他就被周长老单独叫到了一旁。
+
+"李明，你的天资极佳。"周长老神色复杂，"但正因如此，你也要面临更多的挑战。宗门内的竞争，远比你想象的要激烈。"
+
+李明点了点头，表示理解。
+
+"我建议你直接拜入内门。"周长老继续说道，"以你的资质，外门已经不适合你了。"
+
+李明沉思片刻，摇了摇头："周长老，我想先在外门历练一段时间。"
+
+周长老愣了一下，随即露出了赞许的神色："好，有志气。既然如此，那你就在外门好好修行吧。"
+            
+就这样，李明以外门弟子的身份，开始了他在青云宗的修行生涯。而他所不知道的是，一场巨大的风暴，正在悄然酝酿。`
+            };
+            
+            return contents[chapterIndex] || `这是第${chapterIndex}章的内容。\n\n在这个章节中，故事继续向前发展。主角面临着新的挑战和机遇，他必须做出重要的选择。\n\n周围的環境变得更加复杂，新的角色陆续登场。每个人都有自己的目的和秘密。\n\n随着剧情的推进，一些隐藏的线索开始浮出水面。主角逐渐意识到，事情远比他想象的要复杂得多。\n\n本章字数约3000字，情节紧凑，充满悬念。读者将会被深深吸引，迫不及待地想要知道接下来会发生什么。`;
+        }
+
+        // ==================== 页面初始化 ====================
+        document.addEventListener('DOMContentLoaded', () => {
+            initApp();
+            loadSettings();
+            loadProjects();
+            updateHomeStats();
+            
+            // 绑定温度滑块
+            const tempSlider = document.getElementById('settingsTemperature');
+            if (tempSlider) {
+                tempSlider.addEventListener('input', (e) => {
+                    document.getElementById('tempValue').textContent = (e.target.value / 100).toFixed(1);
+                });
+            }
+            
+            // 绑定章节跳转输入框
+            const jumpInput = document.getElementById('jumpChapterInput');
+            if (jumpInput) {
+                jumpInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        jumpToChapter();
+                    }
+                });
+            }
+        });
+
+        function initApp() {
+            // 绑定创建项目表单
+            document.getElementById('createProjectForm').addEventListener('submit', handleCreateProject);
+            
+            // 绑定记忆搜索
+            document.getElementById('memorySearch').addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') {
+                    searchMemory();
+                }
+            });
+        }
+
+        // ==================== 导航系统 ====================
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            const overlay = document.getElementById('overlay');
+            menu.classList.toggle('open');
+            overlay.classList.toggle('active');
+        }
+
+        function closeMenu() {
+            document.getElementById('sideMenu').classList.remove('open');
+            document.getElementById('overlay').classList.remove('active');
+        }
+
+        function navigateTo(viewName) {
+            // 隐藏所有视图
+            const views = document.querySelectorAll('.view');
+            views.forEach(view => view.classList.remove('active'));
+            
+            // 显示目标视图
+            const targetView = document.getElementById(viewName + 'View');
+            if (targetView) {
+                targetView.classList.add('active');
+            }
+            
+            // 关闭菜单
+            closeMenu();
+            
+            // 更新菜单高亮
+            const menuItems = document.querySelectorAll('.menu-item');
+            menuItems.forEach(item => {
+                item.classList.remove('active');
+                if (item.getAttribute('href') === '#' + viewName) {
+                    item.classList.add('active');
+                }
+            });
+            
+            // 视图特定初始化
+            if (viewName === 'projects') {
+                loadProjects();
+            } else if (viewName === 'chapters') {
+                loadChapters();
+            } else if (viewName === 'generate') {
+                updateGenerateView();
+            }
+        }
+
+        // ==================== 项目管理系统 ====================
+        async function loadProjects() {
+            const mockProjects = [
+                {
+                    project_id: 'demo1',
+                    title: '星辰大海',
+                    description: '一个关于星际探险的史诗故事，主角从地球出发，探索未知的宇宙文明。',
+                    genre: 'scifi',
+                    target_words: 10000000,
+                    current_chapter: 15,
+                    word_count: 45000,
+                    status: 'in_progress',
+                    quality_score: 0.85
+                },
+                {
+                    project_id: 'demo2',
+                    title: '剑破苍穹',
+                    description: '少年剑客的成长之路，在乱世中崛起，最终成为一代剑神。',
+                    genre: 'wuxia',
+                    target_words: 5000000,
+                    current_chapter: 20,
+                    word_count: 60000,
+                    status: 'in_progress',
+                    quality_score: 0.82
+                }
+            ];
+            
+            AppState.projects = mockProjects;
+            displayProjects(mockProjects);
+        }
+
+        function displayProjects(projects) {
+            const projectList = document.getElementById('projectList');
+            
+            if (!projects || projects.length === 0) {
+                projectList.innerHTML = `
+                    <div style="text-align:center; padding: 60px 20px; color: var(--gray-500);">
+                        <div style="font-size: 64px; margin-bottom: 20px;">📚</div>
+                        <p style="font-size: 18px; font-weight: 600; margin-bottom: 10px;">还没有作品</p>
+                        <p>点击"新建作品"开始您的创作之旅吧！</p>
+                        <button onclick="navigateTo('create')" style="margin-top: 20px; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">开始创作</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            projectList.innerHTML = projects.map(project => {
+                const progress = project.target_words > 0 
+                    ? Math.round((project.word_count / project.target_words) * 100) 
+                    : 0;
+                    
+                return `
+                    <div style="background: white; border-radius: var(--radius); padding: 20px; margin-bottom: 15px; box-shadow: var(--shadow-sm); cursor: pointer;" onclick="openProject('${project.project_id}')">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                            <h3 style="font-size: 18px; font-weight: 700;">${project.title}</h3>
+                            <button onclick="event.stopPropagation(); viewProjectChapters('${project.project_id}')" style="padding: 8px 15px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-size: 13px;">📑 章节</button>
+                        </div>
+                        <p style="color: var(--gray-600); font-size: 14px; margin-bottom: 15px;">${project.description}</p>
+                        <div style="display: flex; gap: 15px; font-size: 13px; color: var(--gray-500); margin-bottom: 10px;">
+                            <span>📝 ${formatNumber(project.word_count)}字</span>
+                            <span>📖 ${project.current_chapter}章</span>
+                            <span>⭐ ${(project.quality_score * 100).toFixed(0)}分</span>
+                        </div>
+                        <div style="height: 6px; background: var(--gray-200); border-radius: 3px; overflow: hidden;">
+                            <div style="height: 100%; background: linear-gradient(to right, #667eea, #764ba2); width: ${progress}%;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function openProject(projectId) {
+            const project = AppState.projects.find(p => p.project_id === projectId);
+            if (project) {
+                AppState.currentProject = project;
+                AppState.currentProjectId = projectId;
+                AppState.chapters = generateMockChapters(projectId);
+                navigateTo('generate');
+                showToast(`已打开项目：${project.title}`);
+            }
+        }
+
+        function viewProjectChapters(projectId) {
+            const project = AppState.projects.find(p => p.project_id === projectId);
+            if (project) {
+                AppState.currentProject = project;
+                AppState.currentProjectId = projectId;
+                AppState.chapters = generateMockChapters(projectId);
+                navigateTo('chapters');
+            }
+        }
+
+        // ==================== 章节管理系统 ====================
+        function loadChapters() {
+            if (!AppState.currentProject) {
+                // 如果没有选择项目，显示提示
+                document.getElementById('chapterListContainer').innerHTML = `
+                    <div style="text-align:center; padding: 60px 20px; color: var(--gray-500);">
+                        <div style="font-size: 64px; margin-bottom: 20px;">📑</div>
+                        <p style="font-size: 18px; font-weight: 600; margin-bottom: 10px;">未选择项目</p>
+                        <p>请先从"我的作品"中选择一个项目</p>
+                        <button onclick="navigateTo('projects')" style="margin-top: 20px; padding: 12px 30px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 8px; cursor: pointer;">选择项目</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (!AppState.chapters || AppState.chapters.length === 0) {
+                AppState.chapters = generateMockChapters(AppState.currentProjectId);
+            }
+            
+            displayChapterList(AppState.chapters);
+        }
+
+        function displayChapterList(chapters) {
+            const container = document.getElementById('chapterListContainer');
+            
+            const completedCount = chapters.filter(c => c.status === 'completed').length;
+            const generatingCount = chapters.filter(c => c.status === 'generating').length;
+            const pendingCount = chapters.filter(c => c.status === 'pending').length;
+            
+            container.innerHTML = `
+                <div class="chapter-list-container">
+                    <div class="chapter-list-header">
+                        <h3>${AppState.currentProject.title}</h3>
+                        <div style="display: flex; gap: 15px; margin-bottom: 15px; font-size: 13px;">
+                            <span>✅ ${completedCount} 已完成</span>
+                            <span>⏳ ${generatingCount} 生成中</span>
+                            <span>📋 ${pendingCount} 待生成</span>
+                        </div>
+                        <input type="text" class="chapter-search" placeholder="搜索章节..." oninput="searchChapters(this.value)">
+                    </div>
+                    <div class="chapter-list" id="chapterListItems">
+                        ${chapters.map(chapter => `
+                            <div class="chapter-item" onclick="openChapter(${chapter.chapter_index})">
+                                <div class="chapter-info">
+                                    <div class="chapter-title">${chapter.title}</div>
+                                    <div class="chapter-meta">
+                                        <span>📝 ${chapter.word_count}字</span>
+                                        <span>⭐ ${(chapter.quality_score * 100).toFixed(0)}分</span>
+                                        <span>🕐 ${formatTime(chapter.created_at)}</span>
+                                    </div>
+                                </div>
+                                <div class="chapter-status ${chapter.status}">
+                                    ${chapter.status === 'completed' ? '✅ 已完成' : chapter.status === 'generating' ? '⏳ 生成中' : '📋 待生成'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+
+        function searchChapters(query) {
+            if (!query) {
+                displayChapterList(AppState.chapters);
+                return;
+            }
+            
+            const filtered = AppState.chapters.filter(chapter => 
+                chapter.title.includes(query) || 
+                chapter.content.includes(query)
+            );
+            
+            displayChapterList(filtered);
+        }
+
+        function openChapter(chapterIndex) {
+            const chapter = AppState.chapters.find(c => c.chapter_index === chapterIndex);
+            if (chapter) {
+                AppState.currentChapter = chapterIndex;
+                displayReader(chapter);
+                navigateTo('reader');
+            }
+        }
+
+        function displayReader(chapter) {
+            document.getElementById('readerTitle').textContent = chapter.title;
+            document.getElementById('readerContent').textContent = chapter.content;
+            document.getElementById('chapterIndicator').textContent = `第${chapter.chapter_index}章`;
+            
+            // 更新导航按钮状态
+            document.getElementById('prevChapterBtn').disabled = chapter.chapter_index <= 1;
+            document.getElementById('nextChapterBtn').disabled = chapter.chapter_index >= AppState.chapters.length;
+            
+            // 设置跳转输入框
+            document.getElementById('jumpChapterInput').value = chapter.chapter_index;
+            document.getElementById('jumpChapterInput').max = AppState.chapters.length;
+            
+            // 应用当前字体大小和主题
+            applyReaderSettings();
+        }
+
+        function navigateChapter(direction) {
+            const newIndex = AppState.currentChapter + direction;
+            if (newIndex >= 1 && newIndex <= AppState.chapters.length) {
+                openChapter(newIndex);
+            }
+        }
+
+        function jumpToChapter() {
+            const input = document.getElementById('jumpChapterInput');
+            const chapterIndex = parseInt(input.value);
+            
+            if (chapterIndex >= 1 && chapterIndex <= AppState.chapters.length) {
+                openChapter(chapterIndex);
+            } else {
+                showToast(`请输入1-${AppState.chapters.length}之间的章节号`);
+            }
+        }
+
+        function closeReader() {
+            navigateTo('chapters');
+        }
+
+        // ==================== 阅读器设置 ====================
+        function toggleReaderSettings() {
+            const settings = document.getElementById('readerSettings');
+            settings.style.display = settings.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function changeFontSize(delta) {
+            AppState.fontSize = Math.max(12, Math.min(24, AppState.fontSize + delta));
+            document.getElementById('fontSizeDisplay').textContent = AppState.fontSize;
+            applyReaderSettings();
+        }
+
+        function changeTheme(theme) {
+            AppState.theme = theme;
+            
+            // 更新主题按钮状态
+            document.querySelectorAll('.theme-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            document.querySelector(`.theme-btn.${theme}`).classList.add('active');
+            
+            applyReaderSettings();
+        }
+
+        function applyReaderSettings() {
+            const content = document.getElementById('readerContent');
+            if (content) {
+                content.style.fontSize = AppState.fontSize + 'px';
+                
+                // 应用主题
+                switch (AppState.theme) {
+                    case 'light':
+                        content.style.background = 'white';
+                        content.style.color = '#1f2937';
+                        break;
+                    case 'sepia':
+                        content.style.background = '#f5e6d3';
+                        content.style.color = '#5b4636';
+                        break;
+                    case 'dark':
+                        content.style.background = '#1a1a1a';
+                        content.style.color = '#e5e5e5';
+                        break;
+                }
+            }
+        }
+
+        // ==================== 生成系统 ====================
+        function updateGenerateView() {
+            const projectInfo = document.getElementById('generateProjectInfo');
+            const noProject = document.getElementById('noProjectSelected');
+            
+            if (AppState.currentProject) {
+                projectInfo.style.display = 'block';
+                noProject.style.display = 'none';
+                
+                document.getElementById('generateProjectTitle').textContent = 
+                    `📖 ${AppState.currentProject.title}`;
+                document.getElementById('genTotalWords').textContent = 
+                    formatNumber(AppState.currentProject.word_count);
+                document.getElementById('genCurrentChapter').textContent = 
+                    AppState.currentProject.current_chapter;
+            } else {
+                projectInfo.style.display = 'none';
+                noProject.style.display = 'block';
+            }
+        }
+
+        async function startGeneration() {
+            if (!AppState.currentProject) {
+                showToast('请先选择项目');
+                return;
+            }
+            
+            if (AppState.isGenerating) {
+                showToast('正在生成中，请稍候...');
+                return;
+            }
+            
+            AppState.isGenerating = true;
+            showToast('⏳ 开始生成下一章...');
+            
+            // 模拟生成过程
+            await delay(3000);
+            
+            const nextChapter = AppState.currentProject.current_chapter + 1;
+            const newChapter = {
+                chapter_index: nextChapter,
+                title: `第${nextChapter}章`,
+                content: generateMockContent(nextChapter),
+                word_count: 3000,
+                status: 'completed',
+                created_at: new Date().toISOString(),
+                quality_score: 0.8 + Math.random() * 0.15
+            };
+            
+            AppState.chapters.push(newChapter);
+            AppState.currentProject.current_chapter = nextChapter;
+            AppState.currentProject.word_count += newChapter.word_count;
+            
+            AppState.isGenerating = false;
+            showToast(`✅ 第${nextChapter}章生成完成！`);
+            
+            updateGenerateView();
+            
+            // 询问是否查看
+            if (confirm(`第${nextChapter}章生成完成！是否立即查看？`)) {
+                openChapter(nextChapter);
+            }
+        }
+
+        // ==================== 逻辑检查系统 ====================
+        async function runLogicCheck() {
+            showToast('🔍 正在执行全面逻辑检查...');
+            await delay(2000);
+            
+            const resultsContainer = document.getElementById('logicResults');
+            resultsContainer.innerHTML = `
+                <div style="background: #fffbeb; border-left: 4px solid var(--warning); padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+                    <div style="font-weight: 600; color: var(--warning); margin-bottom: 5px;">⚠️ 发现逻辑问题</div>
+                    <p style="font-size: 14px;">人物"李明"在第15章的行为与设定不符</p>
+                </div>
+                <div style="background: #fef2f2; border-left: 4px solid var(--danger); padding: 15px; margin-bottom: 10px; border-radius: 8px;">
+                    <div style="font-weight: 600; color: var(--danger); margin-bottom: 5px;">❌ 严重问题</div>
+                    <p style="font-size: 14px;">时间线出现矛盾：第10章与第12章的时间标记不一致</p>
+                </div>
+            `;
+            
+            showToast('✅ 逻辑检查完成');
+        }
+
+        // ==================== 记忆管理系统 ====================
+        async function searchMemory() {
+            const query = document.getElementById('memorySearch').value;
+            if (!query) {
+                showToast('请输入搜索关键词');
+                return;
+            }
+            
+            showToast('🔍 正在搜索记忆...');
+            await delay(1500);
+            
+            const resultsContainer = document.getElementById('memoryResults');
+            resultsContainer.innerHTML = `
+                <div style="background: #f0fff4; border-left: 4px solid var(--success); padding: 15px; border-radius: 8px;">
+                    <div style="font-weight: 600; color: var(--success); margin-bottom: 5px;">搜索结果</div>
+                    <p style="font-size: 14px;">找到与"${query}"相关的3条记忆</p>
+                </div>
+            `;
+        }
+
+        // ==================== 设置系统 ====================
+        function saveSettings() {
+            AppState.settings = {
+                editorModel: document.getElementById('settingsEditorModel').value,
+                writerModel: document.getElementById('settingsWriterModel').value,
+                temperature: document.getElementById('settingsTemperature').value / 100
+            };
+            
+            localStorage.setItem('novelWriterSettings', JSON.stringify(AppState.settings));
+            showToast('✅ 设置已保存');
+        }
+
+        function loadSettings() {
+            const saved = localStorage.getItem('novelWriterSettings');
+            if (saved) {
+                try {
+                    const settings = JSON.parse(saved);
+                    AppState.settings = settings;
+                    
+                    document.getElementById('settingsEditorModel').value = settings.editorModel;
+                    document.getElementById('settingsWriterModel').value = settings.writerModel;
+                    document.getElementById('settingsTemperature').value = settings.temperature * 100;
+                    document.getElementById('tempValue').textContent = settings.temperature.toFixed(1);
+                } catch (error) {
+                    console.error('加载设置失败:', error);
+                }
+            }
+        }
+
+        // ==================== 创建项目系统 ====================
+        async function handleCreateProject(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(e.target);
+            const projectData = {
+                title: formData.get('title'),
+                description: formData.get('description'),
+                genre: formData.get('genre'),
+                target_words: parseInt(formData.get('target_words'))
+            };
+            
+            if (!projectData.title || !projectData.description) {
+                showToast('请填写作品名称和简介');
+                return;
+            }
+            
+            showToast('⏳ 正在创建项目...');
+            await delay(2000);
+            
+            const newProject = {
+                project_id: 'project_' + Date.now(),
+                title: projectData.title,
+                description: projectData.description,
+                genre: projectData.genre,
+                target_words: projectData.target_words,
+                current_chapter: 0,
+                word_count: 0,
+                status: 'planning',
+                quality_score: 0
+            };
+            
+            AppState.projects.push(newProject);
+            AppState.currentProject = newProject;
+            AppState.currentProjectId = newProject.project_id;
+            AppState.chapters = [];
+            
+            showToast('✅ 项目创建成功！');
+            e.target.reset();
+            
+            navigateTo('generate');
+        }
+
+        // ==================== 工具函数 ====================
+        function formatNumber(num) {
+            if (num >= 100000000) {
+                return (num / 100000000).toFixed(2) + '亿';
+            } else if (num >= 10000) {
+                return (num / 10000).toFixed(1) + '万';
+            }
+            return num.toString();
+        }
+
+        function formatTime(timestamp) {
+            const date = new Date(timestamp);
+            const now = new Date();
+            const diff = now - date;
+            
+            if (diff < 3600000) {
+                return Math.floor(diff / 60000) + '分钟前';
+            } else if (diff < 86400000) {
+                return Math.floor(diff / 3600000) + '小时前';
+            } else {
+                return date.getMonth() + 1 + '月' + date.getDate() + '日';
+            }
+        }
+
+        function delay(ms) {
+            return new Promise(resolve => setTimeout(resolve, ms));
+        }
+
+        function showToast(message, duration = 3000) {
+            const existingToast = document.querySelector('.toast');
+            if (existingToast) {
+                existingToast.remove();
+            }
+            
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transition = 'opacity 0.3s ease';
+                setTimeout(() => {
+                    if (toast.parentNode) {
+                        toast.parentNode.removeChild(toast);
+                    }
+                }, 300);
+            }, duration);
+        }
+
+        function updateHomeStats() {
+            document.getElementById('homeTotalProjects').textContent = AppState.projects.length;
+            const totalWords = AppState.projects.reduce((sum, p) => sum + p.word_count, 0);
+            document.getElementById('homeTotalWords').textContent = formatNumber(totalWords);
+        }
+
+        // ==================== 导出全局函数 ====================
+        window.toggleMenu = toggleMenu;
+        window.closeMenu = closeMenu;
+        window.navigateTo = navigateTo;
+        window.openProject = openProject;
+        window.viewProjectChapters = viewProjectChapters;
+        window.openChapter = openChapter;
+        window.navigateChapter = navigateChapter;
+        window.jumpToChapter = jumpToChapter;
+        window.closeReader = closeReader;
+        window.toggleReaderSettings = toggleReaderSettings;
+        window.changeFontSize = changeFontSize;
+        window.changeTheme = changeTheme;
+        window.searchChapters = searchChapters;
+        window.startGeneration = startGeneration;
+        window.runLogicCheck = runLogicCheck;
+        window.searchMemory = searchMemory;
+        window.saveSettings = saveSettings;
+    </script>
+</body>
+</html>
